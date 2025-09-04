@@ -9,10 +9,10 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 # --- Configuration ---
-CAPTURE_INTERVAL_SECONDS = 300  # 5 minutes
+CAPTURE_INTERVAL_SECONDS = 150  # 5 minutes
 DB_PATH = "activity_log_gemini.db"
 SCREENSHOT_DIR = "screenshots"
-GEMINI_MODEL_NAME = "gemini-2.0-flash"
+GEMINI_MODEL_NAME = "gemini-2.5-flash-lite"
 
 # --- Foundational Components ---
 
@@ -80,7 +80,7 @@ def analyze_text_with_gemini(model, ocr_text: str) -> str:
 
     OCR Text:
     ---
-    {ocr_text}
+    {str(ocr_text)}
     ---
     """
     try:
@@ -103,7 +103,7 @@ def main():
         sct = mss.mss()
         configure_gemini()
         gemini_model = genai.GenerativeModel(GEMINI_MODEL_NAME)
-        ocr_reader = easyocr.Reader(['en'], gpu=False)
+        ocr_reader = easyocr.Reader(['en'], gpu=True)
         initialize_database(DB_PATH)
     except Exception as e:
         print(f"Initialization failed: {e}")

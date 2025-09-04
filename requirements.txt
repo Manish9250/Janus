@@ -2,3 +2,4 @@ mss
 easyocr
 google-generativeai
 python-dotenv
+plyer
