@@ -3,6 +3,8 @@ screenshots
 test.py
 activity_log_gemini.db
 chat_history
+activity_log_gemini.db
+user_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

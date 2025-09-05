@@ -85,7 +85,6 @@ def get_recent_activity_data():
     time_now = datetime.now()
     time_15_mins_ago = time_now - timedelta(minutes=15)
     
-    # CORRECTED FORMAT: Use 'T' to match the database format
     start_time_str = time_15_mins_ago.strftime('%Y-%m-%dT%H:%M:%S')
     
     query = """
