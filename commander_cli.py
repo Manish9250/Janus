@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 # --- CONFIGURATION ---
 load_dotenv()
-DB_PATH = 'activity_log_gemini.db'
+DB_PATH = 'database/activity_log_gemini.db'
 DATA_DIR = 'user_data'
 CHAT_HISTORY_DIR = 'chat_history'
 USER_PROFILE_FILE = os.path.join(DATA_DIR, 'user_profile.json')

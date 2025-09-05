@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 # --- Configuration ---
 CAPTURE_INTERVAL_SECONDS = 150  # 5 minutes
-DB_PATH = "activity_log_gemini.db"
+DB_PATH = "database/activity_log_gemini.db"
 SCREENSHOT_DIR = "screenshots"
 GEMINI_MODEL_NAME = "gemini-2.5-flash-lite"
 
