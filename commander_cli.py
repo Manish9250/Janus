@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
+from re import escape
 import google.generativeai as genai
 from dotenv import load_dotenv
 from rich.console import Console
@@ -63,21 +64,20 @@ The JSON object must have a "response_type" key.
 14. `write_any_file(file_path, data)`: Writes data to any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. The 'data' parameter should be the content to write. Creates the file if it does not exist.
 
 
-I am using rich python library so format you conversation based in rich markdown.
-
-Do one thing at a time. Use a tool or have a conversation, but not both at the same time.also complete the task like if you want to call multiple tools then do it one by one and only start the conversation after the tool calls are done.
-
-You can shorten the conversation_history by summarizing it if it gets too long. Conversation_history is stored in chat_history folder. The file with name conversation_history_YYYY-MM-DD.json is the current file used. use write_any_file tool to add a new block to the json file following the structure like
-
-example: 
-    [{
-        "role": "model",
-        "parts": [
-        "<summary here>"
+**Important Instructions:**
+1. I am using rich python library so format you conversation based in rich markdown.
+2. Do one thing at a time. Use a tool or have a conversation, but not both at the same time.also complete the task like if you want to call multiple tools then do it one by one and only start the conversation after the tool calls are done.
+3. You can shorten the conversation_history by summarizing it if it gets too long. Conversation_history is stored in chat_history folder. The file with name conversation_history_YYYY-MM-DD.json is the current file used. use write_any_file tool to add a new block to the json file following the structure like
+    example: 
+        [{
+            "role": "model",
+            "parts": [
+            "<summary here>"
+            ]
+        }
         ]
-    }
-    ]
-You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
+4. You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
+5. If you want to use tool then don't add any other text except the JSON object.
 """
 
 # --- TOOL FUNCTIONS ---
@@ -295,7 +295,7 @@ def process_llm_response(chat, console, cleaned_response_text):
                     try:
                         final_response = chat.send_message(f"Tool Result: {json.dumps(tool_result)}" + " Please respond with a JSON object as per the instructions.")
                     except Exception as e:  
-                        console.print(f"[bold red]Error sending tool result to chat: {e}[/bold red]")
+                        console.print(f"[bold red]Error sending tool result to chat: {escape(e)}[/bold red]")
                         return
                     # The response to a tool result should also be a JSON object
                     try:
@@ -309,7 +309,7 @@ def process_llm_response(chat, console, cleaned_response_text):
                     console.print(f"[bold red]Janus: Error - I tried to use an unknown tool: {tool_name}[/bold red]")
                     return
             except Exception as e:
-                console.print(f"[bold red]Error executing tool: {e}[/bold red]")
+                console.print(f"[bold red]Error executing tool: {escape(e)}[/bold red]")
                 return
         else:
             console.print(f"[bold red]Janus: Error - Received an unknown response type: {response_type}[/bold red]")
