@@ -98,6 +98,15 @@ def analyze_text_with_gemini(model, ocr_text: str) -> str:
 
 def main():
     """Main loop for the activity monitor."""
+
+    print("Clearing previous screenshots...")
+    if os.path.exists(SCREENSHOT_DIR):
+        for f in os.listdir(SCREENSHOT_DIR):
+            os.remove(os.path.join(SCREENSHOT_DIR, f))
+    else:
+        os.makedirs(SCREENSHOT_DIR)
+
+
     print("Initializing Gemini-based activity monitor...")
     try:
         sct = mss.mss()
