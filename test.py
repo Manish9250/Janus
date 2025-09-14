@@ -1,47 +1,18 @@
-import os
-import json
-import sqlite3
-import time
-from datetime import datetime, timedelta
-from strategist import ACTIVITY_DATA_DIR, DB_PATH
+from rich.console import Console
+from rich.theme import Theme
 
-def get_recent_activity_data(minutes=60):
-    """Queries the DB for the last 'minutes' of activity for today."""
-    print(f"Querying database for recent activity in the last {minutes} minutes...")
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    time_now = datetime.now()
-    time_x_mins_ago = time_now - timedelta(minutes=minutes)
+# Create a console object
+console = Console()
 
-    start_time_str = time_x_mins_ago.strftime('%Y-%m-%dT%H:%M:%S')
+# Your comment variable
+comment = "This is a message with a dark background."
 
-    query = """
-    SELECT timestamp, activity_analysis FROM activity_log 
-    WHERE timestamp >= ?
-    """
-    
-    cursor.execute(query, (start_time_str,))
-    rows = cursor.fetchall()
-    conn.close()
-    
-    if not rows:
-        print("No new activity found in the last 15 minutes.")
-        return None
+# Print the text with a bold white foreground and a black background
+# The style [bold white on black] wraps the entire string.
+console.print(f"[bold white on black] Janus : {comment}[/bold white on black]")
 
-    aggregated_data = []
-    for row in rows:
-        timestamp, analysis_json_str = row
-        try:
-            analysis_data = json.loads(analysis_json_str)
-            analysis_data['timestamp'] = timestamp # Add timestamp to the JSON object
-            aggregated_data.append(analysis_data)
-        except (json.JSONDecodeError, TypeError):
-            # Skip malformed JSON data
-            continue
-            
-    return aggregated_data
+# A dark blue background
+console.print(f"[bold cyan on navy_blue] Janus : {comment}[/bold cyan on navy_blue]")
 
-print("Recent activity data retrieval function loaded.")    
-data = get_recent_activity_data(1440) # last 24 hours
-print(data)
+# A dark grey background
+console.print(f"[bold yellow on grey30] Janus : {comment}[/bold yellow on grey30]")

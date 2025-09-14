@@ -58,6 +58,7 @@ The JSON object must have a "response_type" key.
 10. `read_todays_plan()`: Reads the user's plan for today.
 11. `update_todays_plan(updated_plan)`: Overwrites today's plan.
 
+I am using rich python library so format you conversation based in rich markdown.
 You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
 """
 
@@ -153,7 +154,12 @@ def save_chat_history(history):
     with open(history_path, 'w') as f:
         json.dump(serializable_history, f, indent=2)
 
-# --- MAIN LOGIC ---
+
+# Function that runs for the first time and llm a call with the current date and time, ask it to read all the files and respond with a message that seems appropriate. based on user history.
+def say_hello():
+    user_input = f"Hello Janus, today is {datetime.now().strftime('%A, %B %d, %Y')}. This is a system generated request to read the files and based on all the data of user reponse with a message that seems appropriate. Also if this step is already done in the chat history then just greet the user with a message that seems appropriate."
+    return user_input
+
 # --- MAIN LOGIC ---
 def main():
     """The main CLI loop for the Commander."""
@@ -169,8 +175,13 @@ def main():
     console.print("--- Janus CLI Assistant ---", style="bold yellow")
     console.print("Type 'exit' or 'quit' to end the session.")
 
+    first_run = True
     while True:
-        user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]")
+        if first_run:
+            user_input = say_hello()
+            first_run = False
+        else:
+            user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]")
         if user_input.lower() in ['exit', 'quit']:
             break
 
@@ -191,7 +202,7 @@ def process_llm_response(chat, console, cleaned_response_text):
         if response_type == "conversation":
             try:
                 comment = response_json.get("comment", "I'm not sure what to say.")
-                console.print(f"[bold green]Janus[/bold green]: {comment}")
+                console.print(f"[bold white on black][bold green]Janus[/bold green]: {comment}[/bold white on black]")
                 return
             except Exception as e:
                 console.print(f"[bold red]Error processing conversation response: {e}[/bold red]")

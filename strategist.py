@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 DB_PATH = 'database/activity_log_gemini.db'
 CHAT_HISTORY_DIR = 'chat_history'
-API_KEY = os.getenv('GEMINI_API_KEY')
+API_KEY = os.getenv('GENAI_API_KEY_2')
 ACTIVITY_DATA_DIR = 'activity_data'
 
 
@@ -305,12 +305,11 @@ def main():
         # 5. Wait for the next cycle
         print("Cycle finished. Waiting for 15 minutes...")
 
-        # 6. Update the activity summary of the day every hour
-        current_minute = datetime.now().minute
-        if current_minute == 0:  # At the start of every hour
-            update_activity_summary_of_day()
-
+        ## 6. Update the activity summary of the day every hour
+        #current_minute = datetime.now().minute
+        #if current_minute >= 45:  # At the start of every hour
         update_activity_summary_of_day()
+
         time.sleep(900) # 15 minutes * 60 seconds
 
 if __name__ == "__main__":
