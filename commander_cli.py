@@ -60,8 +60,23 @@ The JSON object must have a "response_type" key.
 11. `update_todays_plan(updated_plan)`: Overwrites today's plan.
 12. `get_project_structure(target_path)`: Retrieves the project's folder structure. Provide the target path as a string parameter. For current directories, use "." as the path. Always provide a target path.
 13. `read_any_file(file_path)`: Reads the content of any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. Returns an error message if the file does not exist or is of an unsupported type.
+14. `write_any_file(file_path, data)`: Writes data to any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. The 'data' parameter should be the content to write. Creates the file if it does not exist.
+
 
 I am using rich python library so format you conversation based in rich markdown.
+
+Do one thing at a time. Use a tool or have a conversation, but not both at the same time.also complete the task like if you want to call multiple tools then do it one by one and only start the conversation after the tool calls are done.
+
+You can shorten the conversation_history by summarizing it if it gets too long. Conversation_history is stored in chat_history folder. The file with name conversation_history_YYYY-MM-DD.json is the current file used. use write_any_file tool to add a new block to the json file following the structure like
+
+example: 
+    [{
+        "role": "model",
+        "parts": [
+        "<summary here>"
+        ]
+    }
+    ]
 You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
 """
 
@@ -187,6 +202,8 @@ TOOL_MAPPING = {
     "update_todays_plan": lambda updated_plan: write_file(TODAYS_PLAN_FILE, updated_plan),
     "get_project_structure": lambda target_path: get_project_structure(target_path),
     "read_any_file": lambda file_path: read_any_file(file_path),
+    # tool that will use write_file function to write data to any file
+    "write_any_file": lambda file_path, data: write_file(file_path, data),
 
 }
 
