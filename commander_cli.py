@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
 from rich.console import Console
@@ -19,7 +20,7 @@ BEHAVIOR_FILE = os.path.join(DATA_DIR, 'user_behavior.json')
 LLM_INFO_FILE = os.path.join(DATA_DIR, 'additional_llm_info.json')
 TODAYS_PLAN_FILE = os.path.join(DATA_DIR, 'todays_plan.json')
 
-API_KEY = os.getenv('GENAI_API_KEY_2')
+API_KEY = os.getenv('GENAI_API_KEY_3')
 if not API_KEY: raise ValueError("GENAI_API_KEY_2 not set.")
 genai.configure(api_key=API_KEY)
 
@@ -57,12 +58,43 @@ The JSON object must have a "response_type" key.
 9.  `get_recent_activity_data(minutes)`: Retrieves the user's computer activity data from the last 'minutes' minutes. Provide the number of minutes as an integer parameter.
 10. `read_todays_plan()`: Reads the user's plan for today.
 11. `update_todays_plan(updated_plan)`: Overwrites today's plan.
+12. `get_project_structure(target_path)`: Retrieves the project's folder structure. Provide the target path as a string parameter. For current directories, use "." as the path. Always provide a target path.
+13. `read_any_file(file_path)`: Reads the content of any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. Returns an error message if the file does not exist or is of an unsupported type.
 
 I am using rich python library so format you conversation based in rich markdown.
 You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
 """
 
 # --- TOOL FUNCTIONS ---
+
+# Function to read the data from any file type provided the path
+def read_any_file(file_path):
+    if not os.path.exists(file_path):
+        return {"status": "error", "message": f"File {os.path.basename(file_path)} does not exist."}
+    try:
+        with open(file_path, 'r') as f:
+            if file_path.endswith('.json'):
+                return json.load(f)
+            elif file_path.endswith('.txt'):
+                return {"content": f.read()}
+            elif file_path.endswith('.md'): # markdown file
+                return {"content": f.read()}
+            elif file_path.endswith('.csv'): # CSV file
+                import pandas as pd
+                df = pd.read_csv(f)
+                return df.to_dict(orient='records')
+            # .sh file
+            elif file_path.endswith('.sh'):
+                return {"content": f.read()}
+            # .py file
+            elif file_path.endswith('.py'):
+                return {"content": f.read()}
+            else:
+                return {"status": "error", "message": "Unsupported file type."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 def read_file(filepath):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     try:
@@ -79,6 +111,29 @@ def write_file(filepath, data):
         return {"status": "success", "message": f"File {os.path.basename(filepath)} updated."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+# get the file structure of provided path
+def get_project_structure(target_path="."):
+    """
+    Returns the top-level directory structure for a given path.
+    
+    Args:
+        target_path (str): The path to the folder to search. 
+                           Defaults to the current directory (".").
+    """
+    # Convert the incoming string path into a Path object
+    search_path = Path(target_path)
+
+    # Safety check: Make sure the path exists and is a directory
+    if not search_path.is_dir():
+        print(f"Error: Path '{search_path}' is not a valid directory.")
+        return {} # Return an empty dictionary on error
+
+    # Use iterdir() for a non-recursive listing of the given path
+    return {
+        path.name: path.name 
+        for path in search_path.iterdir()
+    }
 
 def get_recent_activity_data(minutes=60):
     """Queries the DB for the last 'minutes' of activity for today."""
@@ -130,6 +185,8 @@ TOOL_MAPPING = {
     "get_recent_activity_data": lambda minutes: get_recent_activity_data(minutes),
     "read_todays_plan": lambda: read_file(TODAYS_PLAN_FILE),
     "update_todays_plan": lambda updated_plan: write_file(TODAYS_PLAN_FILE, updated_plan),
+    "get_project_structure": lambda target_path: get_project_structure(target_path),
+    "read_any_file": lambda file_path: read_any_file(file_path),
 
 }
 
