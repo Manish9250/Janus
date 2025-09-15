@@ -62,7 +62,7 @@ The JSON object must have a "response_type" key.
 12. `get_project_structure(target_path)`: Retrieves the project's folder structure. Provide the target path as a string parameter. For current directories, use "." as the path. Always provide a target path.
 13. `read_any_file(file_path)`: Reads the content of any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. Returns an error message if the file does not exist or is of an unsupported type.
 14. `write_any_file(file_path, data)`: Writes data to any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. The 'data' parameter should be the content to write. Creates the file if it does not exist.
-
+15. `current_time()`: Returns the current date and time in the format "YYYY-MM-DD HH:MM:SS".
 
 **Important Instructions:**
 1. I am using rich python library so format you conversation based in rich markdown.
@@ -119,6 +119,7 @@ def read_file(filepath):
         return {}
 
 def write_file(filepath, data):
+    # create directory if it doesn't exist
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     try:
         with open(filepath, 'w') as f:
@@ -204,6 +205,7 @@ TOOL_MAPPING = {
     "read_any_file": lambda file_path: read_any_file(file_path),
     # tool that will use write_file function to write data to any file
     "write_any_file": lambda file_path, data: write_file(file_path, data),
+    "current_time": lambda: {"current_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
 
 }
 
@@ -249,11 +251,9 @@ def main():
     console.print("--- Janus CLI Assistant ---", style="bold yellow")
     console.print("Type 'exit' or 'quit' to end the session.")
 
-    first_run = True
     while True:
-        if first_run:
+        if len(history) == 0:
             user_input = say_hello()
-            first_run = False
         else:
             user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]")
         if user_input.lower() in ['exit', 'quit']:
@@ -279,7 +279,8 @@ def process_llm_response(chat, console, cleaned_response_text):
                 console.print(f"[bold white on black][bold green]Janus[/bold green]: {comment}[/bold white on black]")
                 return
             except Exception as e:
-                console.print(f"[bold red]Error processing conversation response: {e}[/bold red]")
+                console.print(f"[bold red]Error processing conversation response:[/bold red]")
+                print(e)
                 return
         elif response_type == "tool_use":
             try:
@@ -295,7 +296,8 @@ def process_llm_response(chat, console, cleaned_response_text):
                     try:
                         final_response = chat.send_message(f"Tool Result: {json.dumps(tool_result)}" + " Please respond with a JSON object as per the instructions.")
                     except Exception as e:  
-                        console.print(f"[bold red]Error sending tool result to chat: {escape(e)}[/bold red]")
+                        console.print(f"[bold red]Error sending tool result to chat:[/bold red]")
+                        print(e)
                         return
                     # The response to a tool result should also be a JSON object
                     try:
@@ -309,7 +311,8 @@ def process_llm_response(chat, console, cleaned_response_text):
                     console.print(f"[bold red]Janus: Error - I tried to use an unknown tool: {tool_name}[/bold red]")
                     return
             except Exception as e:
-                console.print(f"[bold red]Error executing tool: {escape(e)}[/bold red]")
+                console.print(f"[bold red]Error executing tool:[/bold red]")
+                print(e)
                 return
         else:
             console.print(f"[bold red]Janus: Error - Received an unknown response type: {response_type}[/bold red]")
