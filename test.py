@@ -1,27 +1,42 @@
-from pathlib import Path
-import sys
+import psutil
 
-def get_project_structure():
-    """
-    Returns the directory structure of the project.
-    Defaults to the current working directory if __file__ is not available.
-    """
-    # Use __file__ if available, otherwise fall back to the script's entry point
-    # or the current working directory as a last resort.
-    try:
-        # The most reliable way in a script
-        project_root = Path(__file__).parent.resolve()
-    except NameError:
-        # A fallback for interactive sessions or when __file__ is not defined
-        project_root = Path.cwd()
-        
-    return {
-        str(path.relative_to(project_root)): path.name 
-        for path in project_root.rglob('*')
-    }
+# A list of common browser process names on Linux/Ubuntu.
+# You can add or remove names based on the browsers you use.
+BROWSER_PROCESSES = [
+    "chrome", 
+    "firefox", 
+    "brave-browser", 
+    "opera",
+    "chromium-browser"
+] 
 
-# Example usage:
+def close_all_browsers():
+    """
+    Finds and gracefully terminates all running browser processes 
+    from the BROWSER_PROCESSES list.
+    """
+    print("🚀 Starting browser shutdown for focus session...")
+    browsers_closed = 0
+
+    # Iterate through all running processes on the system
+    for process in psutil.process_iter(['name']):
+        # Check if the process name is in our target list
+        if process.info['name'] in BROWSER_PROCESSES:
+            try:
+                print(f"   -> Found running browser: '{process.info['name']}'. Terminating...")
+                process.terminate()  # Sends a graceful shutdown signal
+                browsers_closed += 1
+            except psutil.NoSuchProcess:
+                # This can happen if the process closes between finding it and terminating it
+                print(f"   -> Could not terminate '{process.info['name']}', it may have already closed.")
+            except psutil.AccessDenied:
+                print(f"   -> ⚠️ Access denied. Could not terminate '{process.info['name']}'. Try running the script with sudo.")
+
+    if browsers_closed > 0:
+        print(f"\n✅ Successfully closed {browsers_closed} browser process(es).")
+    else:
+        print("\n👍 No targeted browsers were found running.")
+
+# This part allows you to run the script directly from the terminal for testing.
 if __name__ == "__main__":
-    structure = get_project_structure()
-    for path, name in structure.items():
-        print(f"{path}: {name}")
+    close_all_browsers()

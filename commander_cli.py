@@ -26,7 +26,6 @@ if not API_KEY: raise ValueError("GENAI_API_KEY_2 not set.")
 genai.configure(api_key=API_KEY)
 
 # --- SYSTEM PROMPT ---
-# --- SYSTEM PROMPT ---
 SYSTEM_PROMPT = """
 You are Janus, a personal AI assistant. Your purpose is to help the user.
 
@@ -219,7 +218,12 @@ def load_chat_history():
     history_path = get_chat_history_path()
     if os.path.exists(history_path):
         with open(history_path, 'r') as f:
-            return json.load(f)
+            chat_history = json.load(f)
+            print(f"Loaded {len(chat_history)} messages from chat history.")
+            if len(chat_history) > 200:  # If history exceeds 200 messages, truncate it
+                print("Chat history too long, truncating to last 10 messages.")
+                return chat_history[-10:]
+            return chat_history
     return []
 
 def save_chat_history(history):
