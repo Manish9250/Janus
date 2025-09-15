@@ -7,6 +7,8 @@ import google.generativeai as genai
 from plyer import notification
 from dotenv import load_dotenv
 
+from blocker import block_for_duration
+
 # --- CONFIGURATION ---
 load_dotenv()
 DB_PATH = 'database/activity_log_gemini.db'
@@ -27,7 +29,11 @@ Use the "execute_code" to categorize the user's status based on the following ru
 - "execute_code": 1 -> The user is being highly productive and deserves praise. The "comment" should be a short, encouraging message.
 - "execute_code": 0 -> The user is distracted or has lost focus. The "comment" should be a firm but helpful nudge to get them back on track.
 - "execute_code": -1 -> The user's activity is neutral, balanced, or there is not enough data. No action is needed. The "comment" should be an empty string.
+- "execute_code": 2 -> The user is spending time on distracting websites or applications. The "comment" should be a dictionary with keys "distracting_sites" (a list of distracting sites) and "duration" (the duration to block them for, in seconds).
 
+
+tools:
+1. `block_for_duration(duration: int, distracting_sites: list)`: Blocks the specified distracting sites for the given duration in seconds. Example: `block_for_duration(600, ["youtube.com", "facebook.com"])` will block YouTube and Facebook for 10 minutes.
 
 Do not use any other codes. Analyze the following user data and provide your JSON response without any additional text or formatting.
 """
@@ -148,6 +154,22 @@ def execute_action(response_data):
             message=comment,
             timeout=15
         )
+    elif code == 2:
+        # Block distracting sites for a duration
+        try:
+            distracting_sites = comment.get("distracting_sites", [])
+            duration = int(comment.get("duration", 600)) # default to 10 minutes if not specified
+            if distracting_sites and duration > 0:
+                block_for_duration(duration, distracting_sites)
+                notification.notify(
+                    title='Janus: Blocking Distracting Sites 🚫',
+                    message=f"Blocked {', '.join(distracting_sites)} for {duration//60} minutes.",
+                    timeout=15
+                )
+            else:
+                print("No distracting sites or invalid duration provided.")
+        except (AttributeError, TypeError, ValueError) as e:
+            print(f"Error processing blocking command: {e}")
     # code == -1 is handled by the "if not comment" check above
 
 
@@ -302,14 +324,14 @@ def main():
             except Exception as e:
                 print(f"An error occurred during the Gemini API call or processing: {e}")
 
-        # 5. Wait for the next cycle
-        print("Cycle finished. Waiting for 15 minutes...")
 
         ## 6. Update the activity summary of the day every hour
         #current_minute = datetime.now().minute
         #if current_minute >= 45:  # At the start of every hour
         update_activity_summary_of_day()
 
+        # 5. Wait for the next cycle
+        print("Cycle finished. Waiting for 15 minutes...")
         time.sleep(900) # 15 minutes * 60 seconds
 
 if __name__ == "__main__":
