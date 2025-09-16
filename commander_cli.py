@@ -266,7 +266,11 @@ def main():
         if user_input.lower() in ['exit', 'quit']:
             break
 
-        response = chat.send_message(user_input + "\nRemember to respond with a single, valid JSON object as per the instructions.")
+        # add timestamp to user input
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user_input = f"[{timestamp}] {user_input}"
+
+        response = chat.send_message(user_input + "<system added instrution > Remember to respond with a single, valid JSON object as per the instructions. Do one thing at a time either use tool or do conversation. <system added instrution>")
         cleaned_response_text = response.text.strip().replace('```json', '').replace('```', '').strip()
         
         # Calling the response processing function
