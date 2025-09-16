@@ -219,8 +219,9 @@ def load_chat_history():
     if os.path.exists(history_path):
         with open(history_path, 'r') as f:
             chat_history = json.load(f)
-            print(f"Loaded {len(chat_history)} messages from chat history.")
-            if len(chat_history) > 200:  # If history exceeds 200 messages, truncate it
+            chat_history_length = len(json.dumps(chat_history))
+            print(f"Loaded {len(chat_history)}({chat_history_length}) messages from chat history.")
+            if chat_history_length > 200000:  # If history exceeds 200k characters, truncate it
                 print("Chat history too long, truncating to last 10 messages.")
                 return chat_history[-10:]
             return chat_history
@@ -255,9 +256,11 @@ def main():
     console.print("--- Janus CLI Assistant ---", style="bold yellow")
     console.print("Type 'exit' or 'quit' to end the session.")
 
+    first_interaction = True
     while True:
-        if len(history) == 0:
+        if len(history) == 0 and first_interaction:
             user_input = say_hello()
+            first_interaction = False
         else:
             user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]")
         if user_input.lower() in ['exit', 'quit']:

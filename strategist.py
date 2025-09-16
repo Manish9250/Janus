@@ -31,6 +31,7 @@ Use the "execute_code" to categorize the user's status based on the following ru
 - "execute_code": -1 -> The user's activity is neutral, balanced, or there is not enough data. No action is needed. The "comment" should be an empty string.
 - "execute_code": 2 -> The user is spending time on distracting websites or applications. The "comment" should be a dictionary with keys "distracting_sites" (a list of distracting sites) and "duration" (the duration to block them for, in seconds).
 
+Note: Don;t use execution code 2: it is under development and may not work as expected.
 
 tools:
 1. `block_for_duration(duration: int, distracting_sites: list)`: Blocks the specified distracting sites for the given duration in seconds. Example: `block_for_duration(600, ["youtube.com", "facebook.com"])` will block YouTube and Facebook for 10 minutes.
