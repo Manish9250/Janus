@@ -18,15 +18,21 @@ CHAT_HISTORY_DIR = 'chat_history'
 USER_PROFILE_FILE = os.path.join(DATA_DIR, 'user_profile.json')
 TASKS_FILE = os.path.join(DATA_DIR, 'tasks.json')
 BEHAVIOR_FILE = os.path.join(DATA_DIR, 'user_behavior.json')
-LLM_INFO_FILE = os.path.join(DATA_DIR, 'additional_llm_info.json')
 TODAYS_PLAN_FILE = os.path.join(DATA_DIR, 'todays_plan.json')
+LLM_INFO_FILE = os.path.join(DATA_DIR, 'additional_llm_info.json')
+# reading llm info file to add it to system prompt
+os.makedirs(DATA_DIR, exist_ok=True)
+with open(LLM_INFO_FILE, 'r') as f:
+    llm_info = f.read()
+
+
 
 API_KEY = os.getenv('GENAI_API_KEY_3')
 if not API_KEY: raise ValueError("GENAI_API_KEY_2 not set.")
 genai.configure(api_key=API_KEY)
 
 # --- SYSTEM PROMPT ---
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT = f"""
 You are Janus, a personal AI assistant. Your purpose is to help the user.
 
 The JSON object must have a "response_type" key.
@@ -35,17 +41,17 @@ The JSON object must have a "response_type" key.
 3.  Whenever you find new info about me first update that into files.
 
 **Example 1: Conversational Reply**
-{
+{{
   "response_type": "conversation",
   "comment": "Of course, I can help you with that."
-}
+}}
 
 **Example 2: Tool Use**
-{
+{{
   "response_type": "tool_use",
   "tool_name": "read_tasks",
-  "parameters": {}
-}
+  "parameters": {{}}
+}}
 
 1.  `read_user_profile()`: Reads the user's personal profile.
 2.  `read_tasks()`: Reads the user's goals and tasks.
@@ -68,15 +74,19 @@ The JSON object must have a "response_type" key.
 2. Do one thing at a time. Use a tool or have a conversation, but not both at the same time.also complete the task like if you want to call multiple tools then do it one by one and only start the conversation after the tool calls are done.
 3. You can shorten the conversation_history by summarizing it if it gets too long. Conversation_history is stored in chat_history folder. The file with name conversation_history_YYYY-MM-DD.json is the current file used. use write_any_file tool to add a new block to the json file following the structure like
     example: 
-        [{
+        [{{
             "role": "model",
             "parts": [
             "<summary here>"
             ]
-        }
+        }}
         ]
 4. You MUST ALWAYS respond with a single, valid JSON object. Do not add any text before or after the JSON object.
 5. If you want to use tool then don't add any other text except the JSON object.
+
+<additional_llm_info>
+{llm_info}
+</additional_llm_info>
 """
 
 # --- TOOL FUNCTIONS ---
