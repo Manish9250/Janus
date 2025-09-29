@@ -3,15 +3,6 @@ easyocr
 google-generativeai
 python-dotenv
 plyer
-faster-whisper 
-torch 
-pyaudio
-coqui-tts
-fastapi[all]
-uvicorn[standard]
-requests 
-pygame 
-pyaudio 
 pynput
 rich
 #pip install PyAudio-0.2.14-cp310-cp310-win_amd64.whl
