@@ -10,6 +10,8 @@ from rich.prompt import Prompt
 import sqlite3
 from datetime import datetime, timedelta
 
+from code_executor import run_code
+
 # --- CONFIGURATION ---
 load_dotenv()
 DB_PATH = 'database/activity_log_gemini.db'
@@ -68,6 +70,7 @@ The JSON object must have a "response_type" key.
 13. `read_any_file(file_path)`: Reads the content of any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. Returns an error message if the file does not exist or is of an unsupported type.
 14. `write_any_file(file_path, data)`: Writes data to any file given its path. Supported file types: .json, .txt, .md, .csv, .sh, .py. The 'data' parameter should be the content to write. Creates the file if it does not exist.
 15. `current_time()`: Returns the current date and time in the format "YYYY-MM-DD HH:MM:SS".
+16. `run_code(code, timeout_seconds)`: Executes provided Python code in a secure sandboxed environment. The 'code' parameter is a string of Python code to execute. The 'timeout_seconds' parameter is an integer specifying the maximum execution time in seconds.
 
 **Important Instructions:**
 1. I am using rich python library so format you conversation based in rich markdown.
@@ -268,6 +271,7 @@ TOOL_MAPPING = {
     # tool that will use write_file function to write data to any file
     "write_any_file": lambda file_path, data: write_file(file_path, data),
     "current_time": lambda: {"current_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
+    "run_code": lambda code, timeout_seconds=5: run_code(code, timeout_seconds),
 
 }
 
