@@ -65,7 +65,7 @@ def log_activity(db_path: str, screenshot_path: str, ocr_text: str, analysis: st
 def configure_gemini():
     """Configures the Gemini API with an API key."""
     load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GENAI_API_KEY_3")
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found. Please set it in a.env file.")
     genai.configure(api_key=api_key)

@@ -1,0 +1,134 @@
+{
+  "weekly_goals": [
+    {
+      "goal": "YouTube Channel Growth",
+      "priority": "Primary",
+      "sub_goals": [
+        "Produce 7 new video scripts (approx. 6-10 mins each, content creation from manhwas if productive).",
+        "Record voiceovers for 7 videos (mix of Hindi/English).",
+        "Edit and upload 7 videos (1 daily upload)."
+      ],
+      "progress_tracking": "Number of videos uploaded, subscriber growth."
+    },
+    {
+      "goal": "College Projects Completion",
+      "priority": "Secondary",
+      "projects": [
+        {
+          "name": "MLP Project",
+          "sub_tasks_this_week": [
+            "Identify current stage and next 3-5 sub-tasks.",
+            "Complete data preprocessing for 2-3 datasets.",
+            "Research model architectures relevant to project."
+          ]
+        },
+        {
+          "name": "AI-based Diet & Health Tracker Web App",
+          "sub_tasks_this_week": [
+            "Outline core features and functionalities (if not done).",
+            "Research 2-3 AI models/APIs for diet/health analysis.",
+            "Plan initial tech stack (frontend/backend/database).",
+            "Set up initial project structure and environment."
+          ]
+        },
+        {
+          "name": "Business Data Management Capstone Project",
+          "sub_tasks_this_week": [
+            "Identify current stage and next 3-5 sub-tasks.",
+            "Begin data collection strategy.",
+            "Outline preliminary database design."
+          ]
+        }
+      ],
+      "progress_tracking": "Completion of defined sub-tasks, commits to repositories."
+    },
+    {
+      "goal": "Internship Preparation",
+      "priority": "Tertiary",
+      "sub_goals": [
+        "Solve 5-7 LeetCode problems (mix of easy/medium).",
+        "Review 2-3 core ML concepts or algorithms (e.g., CNNs, RNNs, Transformers, Gradient Boosting).",
+        "Practice English speaking for 30 minutes daily (mock interviews, self-recording, conversational practice)."
+      ],
+      "progress_tracking": "Number of LeetCode problems solved, concepts reviewed, practice sessions completed."
+    },
+    {
+      "goal": "Health & Well-being",
+      "priority": "Ongoing",
+      "sub_goals": [
+        "Maintain daily gym attendance (Mon-Sat, 6 days a week).",
+        "Plan and stick to a consistent, healthy diet for the week (track with notes or a simple app)."
+      ],
+      "progress_tracking": "Gym attendance log, daily diet adherence."
+    }
+  ],
+  "daily_timetable": {
+    "notes": "This is a flexible template. Adjust timings slightly based on your energy levels and specific project deadlines. The key is consistent effort in each area.",
+    "common_structure": [
+      {
+        "time": "Before 9:00 AM",
+        "activity": "Wake up, Morning Routine, Breakfast, Hydration"
+      },
+      {
+        "time": "9:00 AM - 10:00 AM",
+        "activity": "Internship Preparation (LeetCode/ML Concepts/English Practice)"
+      },
+      {
+        "time": "10:00 AM - 1:00 PM",
+        "activity": "College Project Block 1 (Focused Work)"
+      },
+      {
+        "time": "1:00 PM - 2:00 PM",
+        "activity": "Lunch & Mindful Break"
+      },
+      {
+        "time": "2:00 PM - 3:00 PM",
+        "activity": "YouTube Video Production (Scripting/Recording/Editing for daily upload)"
+      },
+      {
+        "time": "3:00 PM - 3:30 PM",
+        "activity": "Prepare for Teaching / Short Break"
+      },
+      {
+        "time": "3:30 PM - 8:00 PM",
+        "activity": "Teaching Commitments"
+      },
+      {
+        "time": "8:00 PM - 8:30 PM",
+        "activity": "Dinner & Short Break"
+      },
+      {
+        "time": "8:30 PM - 10:00 PM",
+        "activity": "College Project Block 2 (Focused Work)"
+      },
+      {
+        "time": "10:00 PM - 10:30 PM",
+        "activity": "Daily Review & Plan for Tomorrow / English Practice (if not done earlier)"
+      },
+      {
+        "time": "10:30 PM onwards",
+        "activity": "Wind down / Leisure (controlled, e.g., planning for YouTube content, short timed relaxation)."
+      }
+    ],
+    "project_rotation_suggestion": {
+      "College Project A": "MLP Project",
+      "College Project B": "AI-based Diet & Health Tracker Web App",
+      "College Project C": "Business Data Management Capstone Project",
+      "schedule": {
+        "Monday": "Project A & B",
+        "Tuesday": "Project B & C",
+        "Wednesday": "Project C & A",
+        "Thursday": "Project A & B",
+        "Friday": "Project B & C",
+        "Saturday": "Flex time for any project (deep dive or catch-up), or internship prep.",
+        "Sunday": "Rest & Review (plan next week, light work if desired)."
+      }
+    },
+    "important_notes": [
+      "Utilize the LLM-powered Distraction Blocker during focused work blocks (College Projects, Internship Prep, YouTube Production).",
+      "Take short, intentional breaks to avoid burnout and prevent distraction spirals. Set a timer for these breaks.",
+      "Ensure consistent sleep and nutrition for sustained energy and focus.",
+      "Gym attendance should be fit into your morning routine before 9 AM or in the evening after 8:30 PM if you feel energetic enough, ensuring it doesn't cut into critical work blocks. Prioritize consistency."
+    ]
+  }
+}

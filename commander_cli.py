@@ -128,13 +128,66 @@ def read_file(filepath):
         return {}
 
 def write_file(filepath, data):
-    # create directory if it doesn't exist
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    """
+    Writes data to a file, intelligently handling different data types.
+
+    This function will:
+    - Create the directory for the filepath if it doesn't exist.
+    - If the filepath ends with '.json' and the data is a dictionary or list,
+      it will dump the data as a JSON string.
+    - If the data is in bytes, it will write it in binary mode. This is
+      suitable for non-text files like executables, images, etc.
+    - If the data is a string, it will write it in text mode. This is
+      suitable for files like .py, .txt, .html, etc.
+    - If the data type is not supported, it will raise a TypeError.
+
+    Args:
+        filepath (str): The full path to the file to be written.
+        data (dict, list, str, bytes): The data to write to the file.
+
+    Returns:
+        dict: A dictionary containing the status ("success" or "error")
+              and a corresponding message.
+    """
     try:
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2)
-        return {"status": "success", "message": f"File {os.path.basename(filepath)} updated."}
+        # Create the directory if it doesn't exist.
+        # This handles cases where the filepath is just a filename in the current directory.
+        dir_name = os.path.dirname(filepath)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
     except Exception as e:
+        print(f"Error creating directory for '{filepath}': {e}")
+        return {"status": "error", "message": f"Directory creation failed: {e}"}
+
+    try:
+        # --- File Writing Logic ---
+
+        # For .json files, if data is a dict or list, dump it as JSON.
+        if filepath.endswith('.json') and isinstance(data, (dict, list)):
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
+
+        # For binary data, open in write-binary ('wb') mode.
+        elif isinstance(data, bytes):
+            with open(filepath, 'wb') as f:
+                f.write(data)
+
+        # For string data, open in standard write ('w') mode.
+        elif isinstance(data, str):
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(data)
+
+        # Handle unsupported data types.
+        else:
+            raise TypeError(
+                "Unsupported data type. Data must be a str, bytes, or a dict/list for .json files."
+            )
+
+        # If everything succeeded, return a success message.
+        return {"status": "success", "message": f"File '{os.path.basename(filepath)}' was written successfully."}
+
+    except Exception as e:
+        print(f"Error writing to file '{filepath}': {e}")
         return {"status": "error", "message": str(e)}
 
 # get the file structure of provided path
@@ -259,6 +312,7 @@ def main():
     model = genai.GenerativeModel(
         'gemini-2.5-flash',
         system_instruction=SYSTEM_PROMPT,
+        generation_config={"response_mime_type": "application/json"}
     )
     history = load_chat_history()
     chat = model.start_chat(history=history)

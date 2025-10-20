@@ -13,7 +13,7 @@ from blocker import block_for_duration
 load_dotenv()
 DB_PATH = 'database/activity_log_gemini.db'
 CHAT_HISTORY_DIR = 'chat_history'
-API_KEY = os.getenv('GENAI_API_KEY_2')
+API_KEY = os.getenv('GENAI_API_KEY_3')
 ACTIVITY_DATA_DIR = 'activity_data'
 
 
