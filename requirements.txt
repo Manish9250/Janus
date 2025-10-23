@@ -5,4 +5,5 @@ python-dotenv
 plyer
 pynput
 rich
+playsound
 #pip install PyAudio-0.2.14-cp310-cp310-win_amd64.whl

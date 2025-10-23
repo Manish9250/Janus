@@ -1,0 +1,17 @@
+[
+    {
+        "date": "2025-10-21",
+        "action": "Milestone 3 in progress. Lost 3-4 cells of code (data splitting, transformation, LinearSVR) on Kaggle due to unsaved changes.",
+        "notes": "Work was later restored and committed. Final two questions for Milestone 3 were remaining. SelectKBest run on (172,000, 830) dataset took ~5-10 minutes."
+    },
+    {
+        "date": "2025-10-21",
+        "action": "Milestone 3 completed.",
+        "notes": "Confirmed completion of the MLP project Milestone 3."
+    },
+    {
+        "date": "2025-10-23",
+        "action": "Detailed plan for 'real-life ML project' outlined.",
+        "notes": "Project: Predicting daily audience count for cinema based on ticket bookings (BookNow app & POS). Data: 1 year of time series data across 7 tables. Current status: EDA completed on all tables. Next steps: Prepare master table, train and test a baseline model."
+    }
+]

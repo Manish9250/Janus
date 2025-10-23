@@ -1,0 +1,11 @@
+{
+    "name": "Start a YouTube channel",
+    "description": "Create a YouTube channel to explain manhwas using LLMs.",
+    "log": [
+        {
+            "date": "2025-10-23",
+            "action": "Uploaded a 10-minute video.",
+            "notes": "Channel now has 42 subscribers."
+        }
+    ]
+}

@@ -1,42 +1,210 @@
-import psutil
+# File: audio_generator.py
 
-# A list of common browser process names on Linux/Ubuntu.
-# You can add or remove names based on the browsers you use.
-BROWSER_PROCESSES = [
-    "chrome", 
-    "firefox", 
-    "brave-browser", 
-    "opera",
-    "chromium-browser"
-] 
+import mimetypes
+import os
+import struct
+import traceback
+import threading  # <-- NEW IMPORT
+import google.generativeai as genai
 
-def close_all_browsers():
+# NEW IMPORT for playing the audio
+from playsound import playsound
+
+#
+# THIS IS THE NEW FUNCTION YOU WILL CALL FROM YOUR MAIN FILE
+#
+def speak(text_to_speak: str):
     """
-    Finds and gracefully terminates all running browser processes 
-    from the BROWSER_PROCESSES list.
+    Starts the audio generation and playback on a new background thread.
+    This function returns immediately.
     """
-    print("🚀 Starting browser shutdown for focus session...")
-    browsers_closed = 0
+    # Create a new thread object
+    # target = the function to run in the background
+    # args = the arguments to pass to that function (must be a tuple)
+    # daemon = True means the thread will automatically exit when the main program quits
+    thread = threading.Thread(
+        target=_speak_blocking, 
+        args=(text_to_speak,), 
+        daemon=True
+    )
+    
+    # Start the background thread
+    thread.start()
 
-    # Iterate through all running processes on the system
-    for process in psutil.process_iter(['name']):
-        # Check if the process name is in our target list
-        if process.info['name'] in BROWSER_PROCESSES:
+
+#
+# RENAMED your old 'speak' function to '_speak_blocking'
+#
+def _speak_blocking(text_to_speak: str):
+    """
+    The ACTUAL work: generates audio, plays it, and deletes the file.
+    This function runs in the background and is 'blocking'.
+    """
+    print("---------------------------------")
+    print(f"BG Thread: Requesting speech for: '{text_to_speak}'")
+    
+    audio_file = _generate_audio_file(text_to_speak)
+    
+    if audio_file:
+        try:
+            print(f"BG Thread: Playing {audio_file}...")
+            playsound(audio_file)
+        
+        except Exception as e:
+            print(f"BG Thread: Error playing audio file {audio_file}: {e}")
+        
+        finally:
             try:
-                print(f"   -> Found running browser: '{process.info['name']}'. Terminating...")
-                process.terminate()  # Sends a graceful shutdown signal
-                browsers_closed += 1
-            except psutil.NoSuchProcess:
-                # This can happen if the process closes between finding it and terminating it
-                print(f"   -> Could not terminate '{process.info['name']}', it may have already closed.")
-            except psutil.AccessDenied:
-                print(f"   -> ⚠️ Access denied. Could not terminate '{process.info['name']}'. Try running the script with sudo.")
-
-    if browsers_closed > 0:
-        print(f"\n✅ Successfully closed {browsers_closed} browser process(es).")
+                os.remove(audio_file)
+                print(f"BG Thread: Deleted temporary file: {audio_file}")
+            except OSError as e:
+                print(f"BG Thread: Error deleting file {audio_file}: {e}")
     else:
-        print("\n👍 No targeted browsers were found running.")
+        print("BG Thread: Failed to generate audio file.")
 
-# This part allows you to run the script directly from the terminal for testing.
+
+#
+# Renamed 'generate_audio_file' to '_generate_audio_file'
+#
+def _generate_audio_file(text_prompt: str) -> str | None:
+    """
+    Generates an audio file from text and returns the filename.
+    Returns None on failure.
+    """
+    try:
+        genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    except Exception as e:
+        print(f"BG Thread: Error configuring API key: {e}")
+        return None
+
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash-preview-tts"
+    )
+
+    contents = [{"role": "user", "parts": [{"text": text_prompt}]}]
+    
+    generate_content_config = {
+        "temperature": 0.5,
+        "response_modalities": ["AUDIO"],
+        "speech_config": {
+            "voice_config": {"prebuilt_voice_config": {"voice_name": "Zephyr"}}
+        },
+    }
+
+    output_filename = f"temp_audio_{threading.get_ident()}.wav" # Unique name per thread
+    audio_saved = False
+    
+    print("BG Thread: Generating audio...")
+    
+    try:
+        for chunk in model.generate_content(
+            contents=contents,
+            generation_config=generate_content_config,
+            stream=True,
+        ):
+            if (
+                chunk.candidates is None
+                or chunk.candidates[0].content is None
+                or chunk.candidates[0].content.parts is None
+            ):
+                continue
+
+            for part in chunk.candidates[0].content.parts:
+                if part.inline_data and part.inline_data.data:
+                    inline_data = part.inline_data
+                    data_buffer = convert_to_wav(inline_data.data, inline_data.mime_type)
+                    _save_binary_file(output_filename, data_buffer)
+                    audio_saved = True
+
+    except Exception as e:
+        print(f"\n--- BG THREAD ERROR ---")
+        print(f"Error Message: {e}")
+        traceback.print_exc()
+        return None
+
+    if audio_saved:
+        return output_filename
+    else:
+        print("BG Thread: No audio data was returned.")
+        return None
+
+# --- Helper functions are unchanged, just added underscores ---
+
+def _save_binary_file(file_name, data):
+    with open(file_name, "wb") as f:
+        f.write(data)
+    print(f"BG Thread: File saved to: {file_name}")
+
+# THIS IS THE NEW, FIXED FUNCTION
+def convert_to_wav(audio_data: bytes, mime_type: str) -> bytes:
+    """Generates a WAV file header for the given audio data and parameters."""
+    
+    parameters = parse_audio_mime_type(mime_type)
+    bits_per_sample = parameters["bits_per_sample"]
+    sample_rate = parameters["rate"]
+    num_channels = 1
+    data_size = len(audio_data)
+    
+    if bits_per_sample is None or sample_rate is None:
+        bits_per_sample = 16
+        sample_rate = 24000
+        print("Warning: Could not parse audio metadata, defaulting to 16-bit, 24kHz.")
+
+    bytes_per_sample = bits_per_sample // 8
+    block_align = num_channels * bytes_per_sample
+    byte_rate = sample_rate * block_align
+    chunk_size = 36 + data_size
+
+    # This struct.pack call is now correct and has 13 arguments
+    header = struct.pack(
+        "<4sI4s4sIHHIIHH4sI",
+        b"RIFF",          # 1
+        chunk_size,       # 2 (This was the missing argument)
+        b"WAVE",          # 3
+        b"fmt ",          # 4
+        16,               # 5
+        1,                # 6
+        num_channels,     # 7
+        sample_rate,      # 8
+        byte_rate,        # 9
+        block_align,      # 10
+        bits_per_sample,  # 11
+        b"data",          # 12
+        data_size         # 13
+    )
+    return header + audio_data
+
+def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
+    bits_per_sample = 16
+    rate = 24000
+    parts = mime_type.split(";")
+    for param in parts:
+        param = param.strip()
+        if param.lower().startswith("rate="):
+            try: rate = int(param.split("=", 1)[1])
+            except (ValueError, IndexError): pass 
+        elif param.startswith("audio/L"):
+            try: bits_per_sample = int(param.split("L", 1)[1])
+            except (ValueError, IndexError): pass 
+    return {"bits_per_sample": bits_per_sample, "rate": rate}
+
+
+# --- This block is for testing the file directly ---
 if __name__ == "__main__":
-    close_all_browsers()
+    import time
+    if "GEMINI_API_KEY" not in os.environ:
+        print("ERROR: GEMINI_API_KEY environment variable not set.")
+    else:
+        print("Main Thread: Calling speak() for 'Hello'.")
+        speak("Hello! This audio should play in the background.")
+        
+        # This will print immediately, while the audio is still generating
+        print("Main Thread: The 'speak' function returned instantly.")
+        time.sleep(1)
+        print("Main Thread: I'm in my 'main loop' doing other work...")
+        
+        speak("This is a second sentence, which might overlap the first.")
+        
+        print("Main Thread: Waiting for 10 seconds for audio to finish...")
+        time.sleep(10)
+        print("Main Thread: Exiting.")

@@ -11,6 +11,7 @@ import sqlite3
 from datetime import datetime, timedelta
 
 from code_executor import run_code
+from generative_speech import speak
 
 # --- CONFIGURATION ---
 load_dotenv()
@@ -38,14 +39,15 @@ SYSTEM_PROMPT = f"""
 You are Janus, a personal AI assistant. Your purpose is to help the user.
 
 The JSON object must have a "response_type" key.
-1.  If you want to have a conversation, set "response_type" to "conversation" and put your reply in a "comment" key.
+1.  If you want to have a conversation, set "response_type" to "conversation" and put your reply in a "comment" key. And you voice message in "speak" key. Keep the voice message short and relevant to the comment.
 2.  If you need to use a tool, set "response_type" to "tool_use" and add the "tool_name" and "parameters" keys.
 3.  Whenever you find new info about me first update that into files.
 
 **Example 1: Conversational Reply**
 {{
   "response_type": "conversation",
-  "comment": "Of course, I can help you with that."
+  "comment": "Of course, I can help you with that.",
+  "speak": "Sure, I will read the tasks for today and get back to you shortly."
 }}
 
 **Example 2: Tool Use**
@@ -90,6 +92,13 @@ The JSON object must have a "response_type" key.
 <additional_llm_info>
 {llm_info}
 </additional_llm_info>
+
+Use this new conversation json format:
+{{
+  "response_type": "conversation",
+  "comment": "Of course, I can help you with that.",
+  "speak": "Sure, I will read the tasks for today and get back to you shortly."
+}}
 """
 
 # --- TOOL FUNCTIONS ---
@@ -354,12 +363,20 @@ def process_llm_response(chat, console, cleaned_response_text):
 
         if response_type == "conversation":
             try:
+                print("*"*50, "\n",  response_json)
                 comment = response_json.get("comment", "I'm not sure what to say.")
                 console.print(f"[bold white on black][bold green]Janus[/bold green]: {comment}[/bold white on black]")
+                speak_text = response_json.get("speak", None)
+                if speak_text:
+                    speak(speak_text)
                 return
             except Exception as e:
                 console.print(f"[bold red]Error processing conversation response:[/bold red]")
                 print(e)
+                print("Response JSON:", comment)
+                speak_text = response_json.get("speak", None)
+                if speak_text:
+                    speak(speak_text)
                 return
         elif response_type == "tool_use":
             try:

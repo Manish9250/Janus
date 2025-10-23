@@ -29,7 +29,8 @@
             "Research 2-3 AI models/APIs for diet/health analysis.",
             "Plan initial tech stack (frontend/backend/database).",
             "Set up initial project structure and environment."
-          ]
+          ],
+          "status": "completed"
         },
         {
           "name": "Business Data Management Capstone Project",
@@ -112,7 +113,7 @@
     ],
     "project_rotation_suggestion": {
       "College Project A": "MLP Project",
-      "College Project B": "AI-based Diet & Health Tracker Web App",
+      "College Project B": "Web App",
       "College Project C": "Business Data Management Capstone Project",
       "schedule": {
         "Monday": "Project A & B",
