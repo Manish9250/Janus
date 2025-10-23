@@ -13,6 +13,36 @@ from datetime import datetime, timedelta
 from code_executor import run_code
 from generative_speech import speak
 
+
+from dotenv import load_dotenv
+import itertools
+# --- SETUP AND TOOLS (No changes here) ---
+load_dotenv()
+
+# Load all keys from .env into a list
+api_keys = [
+    os.getenv("GOOGLE_API_KEY_1"),
+    os.getenv("GOOGLE_API_KEY_2"),
+    os.getenv("GOOGLE_API_KEY_3"),
+    os.getenv("GOOGLE_API_KEY_4"),
+    os.getenv("GOOGLE_API_KEY_5"),
+    os.getenv("GOOGLE_API_KEY_6"),
+    os.getenv("GOOGLE_API_KEY_7"),
+    os.getenv("GOOGLE_API_KEY_8"),
+    os.getenv("GOOGLE_API_KEY_9"),
+    os.getenv("GOOGLE_API_KEY_10"),
+    os.getenv("GOOGLE_API_KEY_11"),
+]
+# Filter out any missing keys
+valid_keys = [key for key in api_keys if key]
+
+if not valid_keys:
+    raise ValueError("No valid Google API keys found in .env file.")
+
+# Create an infinite, cycling iterator for the keys
+key_rotator = itertools.cycle(valid_keys)
+
+
 # --- CONFIGURATION ---
 load_dotenv()
 DB_PATH = 'database/activity_log_gemini.db'
@@ -363,20 +393,21 @@ def process_llm_response(chat, console, cleaned_response_text):
 
         if response_type == "conversation":
             try:
-                print("*"*50, "\n",  response_json)
                 comment = response_json.get("comment", "I'm not sure what to say.")
                 console.print(f"[bold white on black][bold green]Janus[/bold green]: {comment}[/bold white on black]")
+                current_key_for_llm = next(key_rotator) # Rotate to the next API key
                 speak_text = response_json.get("speak", None)
                 if speak_text:
-                    speak(speak_text)
+                    speak(speak_text, key_rotator=key_rotator)
                 return
             except Exception as e:
                 console.print(f"[bold red]Error processing conversation response:[/bold red]")
                 print(e)
                 print("Response JSON:", comment)
+                current_key_for_llm = next(key_rotator) # Rotate to the next API key
                 speak_text = response_json.get("speak", None)
                 if speak_text:
-                    speak(speak_text)
+                    speak(speak_text, key_rotator=key_rotator)
                 return
         elif response_type == "tool_use":
             try:
